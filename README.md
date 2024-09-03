@@ -1,1 +1,1 @@
-# dice_devops_final_project_client
+# final_project_devops_client_dice_camp

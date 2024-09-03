@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - clientvol:/clientdata
+    networks:
+      - my_network
+
+volumes:
+  clientvol:
+
+networks:
+  my_network:
+    external: true
