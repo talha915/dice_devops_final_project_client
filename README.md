@@ -2,7 +2,7 @@
 This project involves setting up a client-server architecture using Docker, deploying the containers on AWS EC2 instances, and automating the deployment process using CI/CD pipelines and Terraform.
 
 # 1. Docker Setup
-# 1.1 Base Image
+##     1.1 Base Image
     Choose an appropriate base image from the Official Images list.
 
 # 1.2 Dockerfile for Client Container
