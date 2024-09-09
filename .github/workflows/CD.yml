@@ -1,0 +1,84 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  DeploymentUsingTerraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1  # Update this to your region  
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init EC2
+        working-directory: terraform/client
+        run: terraform init
+
+      - name: Terraform Apply (EC2)
+        working-directory: terraform/client
+        run: terraform apply -auto-approve
+
+      - name: Debug Terraform Output
+        working-directory: terraform/client
+        run: |
+          terraform output -json
+          echo "Raw Terraform Output:"
+          terraform output -raw instance_public_ip
+
+      - name: Get EC2 Instance Public IP
+        id: ec2
+        working-directory: terraform/client
+        run: |
+          # Fetch the public IP from Terraform output using awk
+          instance_ip=$(terraform output -raw instance_public_ip | awk '{print $1}')
+          if [ -z "$instance_ip" ]; then
+            echo "Failed to retrieve instance IP"
+            exit 1
+          fi
+          # Set the environment variable
+          echo "EC2_PUBLIC_IP=${instance_ip}" >> $GITHUB_ENV
+
+      - name: Debug Environment Variable
+        run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}"
+
+
+
+      - name: Configure and Run Docker on EC2 Instance
+        env:
+          EC2_IP: ${{ env.EC2_PUBLIC_IP }}
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          # Ensure SSH key is available
+          echo "$SSH_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
+
+          # Install Docker and Docker Compose, and run the Docker container
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@$EC2_IP << 'EOF'
+            # Update and install Docker
+            sudo yum update -y
+            sudo dnf install docker -y
+            sudo systemctl start docker
+            sudo systemctl enable docker
+
+            # Install Docker Compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+
+            # Pull the Docker image and run it
+            sudo docker pull talha915/dice_devops_final_client:latest
+            sudo docker run -d --name my_client_container talha915/dice_devops_final_client:latest
+          EOF

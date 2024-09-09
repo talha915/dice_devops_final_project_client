@@ -26,3 +26,7 @@ resource "aws_instance" "client" {
     Name = "client-ec2-instance"
   }
 }
+
+output "instance_public_ip" {
+  value = aws_instance.client.public_ip
+}
