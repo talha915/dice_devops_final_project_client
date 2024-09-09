@@ -1,50 +1,75 @@
 # Project Overview
-This project involves setting up a client-server architecture using Docker, deploying the containers on AWS EC2 instances, and automating the deployment process using CI/CD pipelines and Terraform.
 
-# 1. Docker Setup
-##   1.1 Base Image
-     Choose an appropriate base image from the Official Images list.
+This repository contains the setup and deployment instructions for a server-client application using Docker, Docker Compose, AWS EC2, and Terraform.
 
-##   1.2 Dockerfile for Client Container
-     Created a Dockerfile for the client container with the following specifications:
+## Base Image and Dockerfile
 
-###  Volume Mounting:
-    - Used a volume named clientvol and mounted it at /clientdata in the container.
-### Package Installation:
-    Installed necessary packages and dependencies required for the client application.
-### Client Application:
-### Functionality:
--    Connects to the server and receives a file.
--    Saves the received file in the /clientdata directory.
--    Verifies the file's integrity by checking the received checksum.
-##  1.3 Docker Compose
-    Used Docker Compose to define and run the client container.
+1. **Choose a Base Image:**
+   - Selected an appropriate base image from the [Official Docker Images list](https://hub.docker.com/search?q=&type=image).
 
-# 2. AWS EC2 Instances
-## 2.1 EC2 Instances
-- Created two AWS EC2 instances (VMs):
-- Server Container: Hosting the server container.
-- Client Container: Hosting the client container.
-- Instance Type: t2.micro (AWS Free Tier).
+2. **Create Dockerfile for Client Container:**
+   - Created a `Dockerfile` for the server container with the following specifications:
+     - Installed necessary packages and dependencies.
+     - Created a volume named "clientvol" mounted at `/clientdata` in the container.
+     - Copied the client application code into the container.
+     - Defined the command to run the client application.
 
-## 2.2 VPC and Subnets
-   Configured the VPC and subnets to allow communication between the two EC2 instances.
+3. **Docker Compose for Server Container:**
+   - Defined and ran the server container using Docker Compose.
 
-## 2.3 Terraform
-   Used Terraform for infrastructure automation.
+4. **Docker Compose for Client Container:**
+   - Created a Docker Compose configuration for the client container which:
+     - Saves the received file in the `/clientdata` directory.
+     - Verifies the file's integrity by checking the received checksum.
 
-# 3. Git Repositories and CI/CD
-## 3.1 Repositories
-   Created two separate Git repositories for the server and client codebases.
+## AWS EC2 Instances
 
-## 3.2 CI/CD Pipelines
-   Set up CI/CD pipelines for both repositories to:
--   Push Images: Push images to a public registry like Docker Hub.
--   Private Git Runners: Configure the corresponding VMs as private Git runners.
+1. **Create EC2 Instances:**
+   - Created two AWS EC2 instances (VMs):
+     - One for hosting the server container.
+     - Another for hosting the client container.
+   - Used the `t2.micro` instance type, which is covered under the AWS free tier.
 
-# Deployment:
-  - Update the image tag in Docker Compose.
-  - Pull the new image and deploy it as part of the CD process.
+2. **Configure Networking:**
+   - Configured the VPC and subnets to allow communication between the two EC2 instances.
 
-# 3.3 Email Notifications
-- Integrated email notifications for CI/CD pipeline events.
+3. **Terraform Automation:**
+   - Used Terraform for infrastructure automation to create and manage the EC2 instances and networking configuration.
+   - Configured Terraform state file locking to prevent concurrent modifications:
+     - **S3 Bucket**: Used an S3 bucket to store the Terraform state file.
+     - **DynamoDB Table**: Used a DynamoDB table for state locking and concurrency control.
+
+## CI/CD Pipelines
+
+1. **Git Repositories:**
+   - Created two separate Git repositories for the server and client codebases.
+
+2. **CI/CD Pipelines Setup:**
+   - Set up CI/CD pipelines for both repositories:
+     - Pushed Docker images to a public registry (Docker Hub).
+     - Configured the corresponding VMs as private Git runners.
+     - Updated the image tag in Docker Compose, pulled the new image, and deployed it as part of the Continuous Deployment (CD) process.
+
+3. **Email Notifications:**
+   - Integrated email notifications for build and deployment statuses.
+
+## Requirements
+
+1. **Server Application:**
+   - The server application is developed using FastAPI and requires the following dependencies:
+     - Listed in `requirements.txt`.
+
+2. **Installation and Setup:**
+   - Follow the instructions in the respective repository for detailed setup and installation steps.
+
+## Usage
+
+- To run the server and client containers, use Docker Compose commands as defined in the `docker-compose.yml` files.
+- Ensure that AWS EC2 instances are properly configured and can communicate with each other.
+- Check the CI/CD pipeline logs for build and deployment statuses.
+
+## Notes
+
+- Ensure that your AWS credentials and Terraform configuration are set up correctly for seamless infrastructure provisioning.
+- The S3 bucket and DynamoDB table for Terraform state locking need to be correctly configured. Update the Terraform backend configuration as necessary.
+- Update the Docker images in the registry as needed and reflect changes in the Docker Compose configurations.
