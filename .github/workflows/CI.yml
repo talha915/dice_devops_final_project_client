@@ -48,6 +48,11 @@ jobs:
     
     - name: Push Docker image to Docker Hub
       run: |
-        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_IMAGE_NAME }}
-        
+        for service in $(docker-compose config --services); do
+            # Get the image name as defined in docker-compose.yml
+            image_name=$(docker-compose config | grep "image:" | awk -F: '{print $2}' | tr -d ' ')
+            # Tag and push the image
+            docker tag ${image_name} ${{ secrets.DOCKER_HUB_USERNAME }}/$image_name:latest
+            docker push ${{ secrets.DOCKER_HUB_USERNAME }}/$image_name:latest
+          done
     

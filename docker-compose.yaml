@@ -9,6 +9,7 @@ services:
       - clientvol:/clientdata
     networks:
       - my_network
+    image: dice_devops_final_client  
 
 volumes:
   clientvol:
