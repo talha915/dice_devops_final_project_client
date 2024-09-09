@@ -3,7 +3,7 @@ import hashlib
 import os
 
 # Server URL to fetch the file
-server_url = "http://server:8000/generate_file"
+server_url = "http://18.156.5.166/generate_file"
 
 # Path to save the downloaded file
 file_path = "/clientdata/received_file.txt"  # Full path used here
