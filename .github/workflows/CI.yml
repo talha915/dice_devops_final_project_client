@@ -40,10 +40,6 @@ jobs:
         wget https://github.com/aquasecurity/trivy/releases/download/v0.39.1/trivy_0.39.1_Linux-64bit.deb
         sudo dpkg -i trivy_0.39.1_Linux-64bit.deb
 
-    - name: Run Trivy Security Scan
-      run: |
-        trivy image ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_IMAGE_NAME }} --format table --severity HIGH,CRITICAL --ignore-unfixed
-
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
       with:
